@@ -133,13 +133,13 @@ user_aggregator, assistant_aggregator = LLMContextAggregatorPair(
 # 3. 按数据流顺序串成管道
 pipeline = Pipeline(
     [
-        transport.input(),      # 用户输入（音频/视频入帧化）
-        stt,                    # 语音 → 文本
-        user_aggregator,        # 用户轮次管理与上下文写入
-        llm,                    # 推理，流式输出文本
-        tts,                    # 文本 → 语音
-        transport.output(),     # 播放给用户
-        assistant_aggregator,   # bot 轮次管理与上下文写入
+        transport.input(),  # 用户输入（音频/视频入帧化）
+        stt,  # 语音 → 文本
+        user_aggregator,  # 用户轮次管理与上下文写入
+        llm,  # 推理，流式输出文本
+        tts,  # 文本 → 语音
+        transport.output(),  # 播放给用户
+        assistant_aggregator,  # bot 轮次管理与上下文写入
     ]
 )
 
@@ -163,6 +163,7 @@ class FrameDirection(Enum):
         DOWNSTREAM: Frames flowing from input to output.
         UPSTREAM: Frames flowing back from output to input.
     """
+
     DOWNSTREAM = 1
     UPSTREAM = 2
 ```

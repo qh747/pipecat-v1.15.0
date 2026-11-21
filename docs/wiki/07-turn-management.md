@@ -29,10 +29,10 @@
 # turns/user_turn_strategies.py:63-100
 @dataclass
 class UserTurnStrategiesParams:
-    start_merge_mode: MergeMode = MergeMode.REPLACE   # 用户策略整体替换服务推荐
+    start_merge_mode: MergeMode = MergeMode.REPLACE  # 用户策略整体替换服务推荐
     stop_merge_mode: MergeMode.REPLACE
-    start_mode: StrategyMode = StrategyMode.FIRST     # start：第一个拍板
-    stop_mode: StrategyMode = StrategyMode.ALL        # stop：全员同意
+    start_mode: StrategyMode = StrategyMode.FIRST  # start：第一个拍板
+    stop_mode: StrategyMode = StrategyMode.ALL  # stop：全员同意
 ```
 
 **默认组合**（`user_turn_strategies.py:403-427`、`:134-140`）：

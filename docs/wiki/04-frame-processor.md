@@ -35,9 +35,9 @@ flowchart LR
 输入队列是三级优先队列（`frame_processor.py:149-151`）：
 
 ```python
-START_PRIORITY = 1      # StartFrame
-SYSTEM_PRIORITY = 10    # 其它 SystemFrame
-DEFAULT_PRIORITY = 20   # 一切普通帧
+START_PRIORITY = 1  # StartFrame
+SYSTEM_PRIORITY = 10  # 其它 SystemFrame
+DEFAULT_PRIORITY = 20  # 一切普通帧
 ```
 
 - 同优先级用单调递增计数器保持到达顺序，**从不比较帧对象本身**（避免 dataclass 比较异常）。
@@ -163,8 +163,8 @@ AGENTS.md 的规则在本版源码中的体现：
 
 ```python
 # 正确：慢活丢给 TaskManager 管理的任务
-self.create_task(self._transcribe(segment), name="transcribe")   # base_object.py:131-152
-await self.cancel_task(task, timeout=1.0)                        # 默认 1 秒超时
+self.create_task(self._transcribe(segment), name="transcribe")  # base_object.py:131-152
+await self.cancel_task(task, timeout=1.0)  # 默认 1 秒超时
 ```
 
 - `create_task(coroutine, name)` 把任务交给 `BaseTaskManager`：任务名自动加 `{processor}::` 前缀；**绝不**直接用 `asyncio.create_task()`（Worker 结束时未跟踪的任务会泄漏并触发 dangling-task 告警）。
@@ -252,8 +252,7 @@ self._register_event_handler("on_usable_changed")
 
 ```python
 @processor.event_handler("on_error")
-async def on_error(processor: FrameProcessor, error: ErrorFrame):
-    ...
+async def on_error(processor: FrameProcessor, error: ErrorFrame): ...
 ```
 
 两种执行模式的语义：

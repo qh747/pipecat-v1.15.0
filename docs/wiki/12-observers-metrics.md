@@ -28,6 +28,7 @@ class FramePushed:
         first_push: Whether this is the first time the frame is pushed.
     """
 
+
 @dataclass
 class FrameProcessed:
     """Data pushed when a processor processes a frame.
@@ -118,14 +119,16 @@ worker = PipelineWorker(
 ```python
 from pipecat.observers.base_observer import BaseObserver, FramePushed
 
+
 class MyLatencyLogger(BaseObserver):
     """记录每次 LLM 输出首块的推送时间。"""
 
     def __init__(self):
-        super().__init__()          # observe_every_push 默认 True
+        super().__init__()  # observe_every_push 默认 True
 
     async def on_push_frame(self, data: FramePushed):
         from pipecat.frames.frames import LLMTextFrame
+
         if isinstance(data.frame, LLMTextFrame) and data.first_push:
             print(f"first LLM chunk at {data.timestamp}")
 ```

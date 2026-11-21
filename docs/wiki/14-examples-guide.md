@@ -21,22 +21,34 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
 
     context = LLMContext()
     user_aggregator, assistant_aggregator = LLMContextAggregatorPair(
-        context, user_params=LLMUserAggregatorParams(vad_analyzer=SileroVADAnalyzer()))
+        context, user_params=LLMUserAggregatorParams(vad_analyzer=SileroVADAnalyzer())
+    )
 
-    pipeline = Pipeline([transport.input(), stt, user_aggregator, llm,
-                         tts, transport.output(), assistant_aggregator])
+    pipeline = Pipeline(
+        [
+            transport.input(),
+            stt,
+            user_aggregator,
+            llm,
+            tts,
+            transport.output(),
+            assistant_aggregator,
+        ]
+    )
 
-    worker = PipelineWorker(pipeline,
+    worker = PipelineWorker(
+        pipeline,
         params=PipelineParams(enable_metrics=True, enable_usage_metrics=True),
         idle_timeout_secs=runner_args.pipeline_idle_timeout_secs,
-        processor_unusable_policy=ProcessorUnusablePolicy.END)
+        processor_unusable_policy=ProcessorUnusablePolicy.END,
+    )
     runner = WorkerRunner(handle_sigint=runner_args.handle_sigint)
     await runner.add_workers(worker)
 
     @transport.event_handler("on_client_connected")
     async def on_client_connected(transport, client):
         context.add_message({"role": "developer", "content": "请向用户做自我介绍。"})
-        await worker.queue_frames([LLMRunFrame()])      # 开场白触发
+        await worker.queue_frames([LLMRunFrame()])  # 开场白触发
 
     @transport.event_handler("on_client_disconnected")
     async def on_client_disconnected(transport, client):
@@ -44,12 +56,15 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
 
     await runner.run()
 
+
 async def bot(runner_args: RunnerArguments):
     transport = await create_transport(runner_args, transport_params)
     await run_bot(transport, runner_args)
 
+
 if __name__ == "__main__":
     from pipecat.runner.run import main
+
     main()
 ```
 

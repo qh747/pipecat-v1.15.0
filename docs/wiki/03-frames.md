@@ -101,7 +101,8 @@ classDiagram
 # 方式一：类级别声明（推荐）——EndFrame 就是这样自保的
 @dataclass
 class EndFrame(ControlFrame):
-    interruptible: bool = field(default=False, init=False)   # frames.py:2448
+    interruptible: bool = field(default=False, init=False)  # frames.py:2448
+
 
 # 方式二：实例级别（对单个帧生效）
 frame = TTSSpeakFrame("这句话很重要，请听完")
@@ -252,6 +253,7 @@ sequenceDiagram
 from dataclasses import dataclass, field
 from pipecat.frames.frames import DataFrame
 
+
 @dataclass
 class MyRetrievalResultFrame(DataFrame):
     """RAG 检索结果帧。
@@ -259,7 +261,9 @@ class MyRetrievalResultFrame(DataFrame):
     Parameters:
         documents: 检索到的文档片段。
     """
+
     documents: list[str]
+
 
 # 若希望它在用户打断时也不被丢弃：
 @dataclass

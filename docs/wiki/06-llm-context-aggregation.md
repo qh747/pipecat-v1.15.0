@@ -52,10 +52,12 @@ LLMContextMessage = LLMStandardMessage | LLMSpecificMessage
 ```python
 context = LLMContext()
 ...
+
+
 @transport.event_handler("on_client_connected")
 async def on_client_connected(transport, client):
     context.add_message({"role": "developer", "content": "请向用户做自我介绍。"})
-    await worker.queue_frames([LLMRunFrame()])   # 用当前上下文触发推理
+    await worker.queue_frames([LLMRunFrame()])  # 用当前上下文触发推理
 ```
 
 ### 6.1.3 adapter：即时翻译层

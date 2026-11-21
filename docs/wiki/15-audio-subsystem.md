@@ -50,6 +50,7 @@ class VADParams(BaseModel):
         stop_secs: Duration to wait before confirming voice stop.
         min_volume: Minimum audio volume threshold for voice detection.
     """
+
     confidence: float = VAD_CONFIDENCE
     start_secs: float = VAD_START_SECS
     stop_secs: float = VAD_STOP_SECS
@@ -89,6 +90,7 @@ class EndOfTurnState(Enum):
         COMPLETE: The user has finished their turn and stopped speaking.
         INCOMPLETE: The user is still speaking or may continue speaking.
     """
+
     COMPLETE = 1
     INCOMPLETE = 2
 ```

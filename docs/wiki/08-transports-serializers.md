@@ -59,7 +59,7 @@ class TransportParams:
     audio_in_stream_on_start: bool = True
     audio_in_passthrough: bool = True
     video_in_enabled: bool = False
-    video_in_sources: dict[str, VideoInSourceParams] = {}   # "camera"/"screenVideo"/自定义
+    video_in_sources: dict[str, VideoInSourceParams] = {}  # "camera"/"screenVideo"/自定义
     video_out_enabled: bool = False
     video_out_is_live: bool = False
     video_out_width: int = 1024

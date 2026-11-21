@@ -137,6 +137,7 @@ class ProcessorUnusablePolicy(Enum):
         END: End the pipeline gracefully, letting queued frames drain first.
         CANCEL: Cancel the pipeline immediately, abandoning queued frames.
     """
+
     CONTINUE = "continue"
     END = "end"
     CANCEL = "cancel"

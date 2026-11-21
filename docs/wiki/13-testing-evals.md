@@ -123,9 +123,7 @@ from pipecat.evals.scenario import EvalScenarioFile
 from pipecat.evals.session import EvalSession, EvalSessionParams
 
 scenario = EvalScenarioFile.load("scenarios/demo.yaml").scenarios[0]
-result = await EvalSession.from_scenario(
-    scenario, bot_url, params=EvalSessionParams(...)
-).run()
+result = await EvalSession.from_scenario(scenario, bot_url, params=EvalSessionParams(...)).run()
 # scripted → EvalScriptResult；simulation → EvalSimulationResult（results.py）
 ```
 
@@ -133,7 +131,8 @@ result = await EvalSession.from_scenario(
 
 ```python
 from pipecat.evals.simulation_judge import EvalSimulationJudge
-verdicts = await EvalSimulationJudge(simulation).judge(messages)   # 每个判定带 reason
+
+verdicts = await EvalSimulationJudge(simulation).judge(messages)  # 每个判定带 reason
 ```
 
 用它在不重跑 bot 的情况下调 `criterion` 措辞——把已有 run 的对话拿回来反复评。
