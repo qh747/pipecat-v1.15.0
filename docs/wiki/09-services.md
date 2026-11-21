@@ -65,6 +65,8 @@ classDiagram
 
 **SegmentedSTTService**（v1.15.0 清理过）：把每个语音段的转写放进 `create_task` 后台任务。原因写在 AGENTS.md 里——内联转写会让输入音频帧排在转写后面，下游 VAD 拿不到帧、打断检测失灵。
 
+**说话人分离（v1.16.0）**：转录帧（`TranscriptionFrame` / `InterimTranscriptionFrame` / `EagerTranscriptionFrame`）新增 `speaker` 字段（`TranscriptionSpeaker`：provider 标签 + speaker 编号）；支持分离的服务（Deepgram、AssemblyAI、AWS Transcribe、ElevenLabs `diarize`、OpenAI diarize 模型等）填入。`speaker_format` 设置可把说话人写进转写文本（如 `"[Speaker {speaker_number}] {text}"`）。**破坏性变更**：AssemblyAI / Speechmatics / Nvidia 原先把分离说话人放在 `user_id`（participant id），v1.16 起统一放在 `speaker`，读取 `frame.speaker`。
+
 ### 9.1.3 TTSService（`services/tts_service.py`）
 
 核心抽象是 `run_tts(text: str, context_id: str) -> AsyncGenerator[Frame | None, None]`（`:808`）：文本进、音频帧流（`TTSAudioRawFrame`）出。
@@ -100,13 +102,13 @@ class LLMService(UserTurnCompletionLLMServiceMixin, AIService, Generic[TAdapter]
 | 能力 | 供应商 |
 | ---- | ---- |
 | **LLM / 推理** | openai、anthropic、google（Gemini）、groq、deepseek、mistral、together、fireworks、perplexity、grok、nvidia、cerebras、sambanova、nebius、novita、crusoe、openrouter、ollama（本地）、qwen、aws（Bedrock）、azure |
-| **STT 语音识别** | deepgram、assemblyai、gladia、speechmatics、soniox、cartesia、azure、google、aws、moonshine（本地）、whisper（本地）、funasr（本地）、keenable |
-| **TTS 语音合成** | cartesia、elevenlabs、azure、google、aws、fish、rime、inworld、neuphonic、smallest、resembleai、speechify、minimax、baseten、camb、kokoro（本地）、piper（本地）、xtts（本地）、pocket_tts（本地）、asyncai、fal |
-| **实时/Speech-to-Speech** | openai（Realtime）、google（Gemini Live）、aws（Nova Sonic）、azure（Voice Live）、ultravox、openclaw、heygen |
+| **STT 语音识别** | deepgram、assemblyai、gladia、speechmatics、soniox、cartesia、azure、google、aws、sarvam、rime、moonshine（本地）、whisper（本地）、funasr（本地）、keenable |
+| **TTS 语音合成** | cartesia、elevenlabs、azure、google、aws、fish、heygen、rime、inworld、neuphonic、smallest、resembleai、speechify、minimax、baseten、camb、kokoro（本地）、piper（本地）、xtts（本地）、pocket_tts（本地）、asyncai、fal |
+| **实时/Speech-to-Speech** | openai（Realtime）、google（Gemini Live、Interactions）、aws（Nova Sonic）、azure（Voice Live）、zoom_ai（Zoom AI Voice Agent，需 `zoom-ai` extra）、ultravox、openclaw、heygen |
 | **视觉/多模态** | google、openai、azure、moondream |
 | **图像生成** | fal、google、openai（`image_service.py` 基类） |
 | **数字人 Avatar** | heygen、tavus、simli、lemonslice（目录在 transports） |
-| **其它** | mem0（记忆）、hume（情感）、meta、zoom_ai、mcp_service（MCP 工具接入）、stt_latency（TTFS p99 参考值） |
+| **其它** | mem0（记忆）、hume（情感；**`HumeTTSService` 已弃用**——Hume TTS API 2026-11-13 关停，2.0.0 移除）、meta、zoom_ai（STT；另有 `ZoomAIRealtimeLLMService` 见上行）、mcp_service（MCP 工具接入）、stt_latency（TTFS p99 参考值） |
 
 通用辅助基类：`websocket_service.py`（自定义 WebSocket 服务的骨架）、`mcp_service.py`（把 MCP 服务器暴露为 LLM 工具）、`image_service.py`。
 
@@ -138,6 +140,8 @@ v1.15 新引入的能力体系：LLM 在回复中写表情标签（`[sadly]`、`
 - **`ExpressionPolicy`**（`expressive/policy.py:64`）：控制「给 LLM 提供哪些标签、何时用」——`guidance`（行为准则行，如 MATCH_STYLE / SLOW_FOR_DETAILS / BREATHE）、`delivery`（可用语气白名单）、`sounds`（可用拟声白名单）。
 - **`BaseExpressionAdapter`**（`adapters/tts/base_expression_adapter.py`）：按模型/voice 在 `get_expression_adapter()` 里选择；服务用它在 word timestamps 里把 provider markup 报成一个带括号的「词」，保证 word tracking 对齐。
 - 现有适配器（`adapters/tts/services/`）：azure、cartesia、elevenlabs、fish、gemini、inworld、minimax、mistral、soniox。
+- **感知读取器**（`expressive/processors/`）：`PerceptionReader` 子类对用户转录提分类问题、把读数写进用户消息头部（同一轮的多个读数按信号取最高值合并）。tone 相关对象已从 `pipecat.processors.tone` 移至 `pipecat.expressive.processors.*`（`tone_tagger` / `tone_reader`，旧路径已删除）。依赖 extra：`tone` 已弃用 → `expressivity`。
+- 感知用的分类器在 `src/pipecat/classifiers/`（tone、voice、google、hume），见 [16](16-flows-and-support.md)。
 - 不做表情的服务返回 `BaseExpressionAdapter()`（空实现）——「只有停顿不算表演能力」（AGENTS.md 规则）。
 
 完整示例：`examples/expressive-conversation/`。

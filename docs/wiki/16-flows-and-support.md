@@ -68,7 +68,7 @@ functions:
 | `ScoreQuestion`（`:74`） | `ScoreResult` | 「给用户满意度打 1-5 分」 |
 | `ClassifierImage`（`:93`） | — | 附带图像一起问（多模态分类） |
 
-`ask()` 接受任意混合的问题（一次问多个），`yes_no()`/`choice()`/`score()` 问同类问题；失败抛 `ClassifierError`。
+`ask()` 接受任意混合的问题（一次问多个），`yes_no()`/`choice()`/`score()` 问同类问题；失败抛 `ClassifierError`。v1.16：附带图像的参数 `images=` 弃用，改传 `inputs=`（自定义分类器的 `_ask()` 同样收 `inputs`）。
 
 ### 16.2.2 提供商
 
@@ -76,6 +76,8 @@ functions:
 | ---- | ---- |
 | `classifiers/openai/` | 用 OpenAI 模型做分类 |
 | `classifiers/llm/` | 通用 LLM 分类器（任意兼容服务） |
+| `classifiers/tone/`、`classifiers/voice/` | Pipecat 本地分类器（`PipecatToneClassifier` / `PipecatVoiceClassifier`）：情绪/语气与音色感知，表情对话的读取器使用（见 [09](09-services.md)） |
+| `classifiers/google/`、`classifiers/hume/` | `GoogleDecisionsClassifier` / `HumeAudioClassifier`（v1.16 新增）：对音频问情绪/语气类问题 |
 | `classifiers/cloudflare/`、`classifiers/jev/`、`classifiers/typesafe/` | 托管分类端点（jev/typesafe 同时被评估框架的 judge 使用，见 [13](13-testing-evals.md)） |
 
 **框架内部消费方**：轮次 stop 策略 `ClassifierUserTurnStopStrategy`（[07](07-turn-management.md)）——每次停顿问分类器「这句说完了吗」，且**失败/超时立即放行**，轮次永不卡在分类器上。示例：`examples/features/features-classifiers.py`。

@@ -8,7 +8,7 @@
 > - **VAD**：`VADAnalyzer` 抽象基类 + 4 个实现（Silero 默认、WebRTC、Krisp、AIC），参数集中在 `VADParams`
 > - **轮次检测（SmartTurn）**：`BaseTurnAnalyzer` 判定 `COMPLETE`/`INCOMPLETE`，是默认 stop 策略的底层模型
 > - **过滤器**在 VAD 之前（输入）/混音之前（输出）处理音频——降噪就是在这里发生的
-> - **重采样器**是电话序列化器（8k μ-law ↔ 管线 PCM）背后的引擎
+> - **重采样器**是电话序列化器（8k μ-law ↔ 管线 PCM）背后的引擎——v1.16 起默认 Sinc 实现（`pipecat-resampler` 包），SOXR/Resampy 已弃用并移至 extras
 
 ## 15.1 模块全景
 
@@ -138,10 +138,11 @@ class BaseAudioFilter(ABC):
 
 | 实现 | 文件 | 说明 |
 | ---- | ---- | ---- |
-| `SoxrResampler` / `SoxrStreamResampler` | `resamplers/soxr_resampler.py` / `soxr_stream_resampler.py` | soxr 库；**流式版本**是电话序列化器的默认选择（支持 `clear_after_secs` 在打断后清理残留样本） |
-| `ResampyResampler` | `resampy_resampler.py` | resampy 库备选 |
+| `SincAudioResampler` / `SincStreamAudioResampler` | `resamplers/sinc_resampler.py` / `sinc_stream_resampler.py` | **默认选择**（`create_file_resampler()` / `create_stream_resampler()` 的返回值），基于 `pipecat-resampler` 包；重采样结果延迟几毫秒输出而非积攒整块。流式版本跨暂停保留已缓冲音频，每条流结束时调用 `flush()` / `reset()`（`clear_after_secs` 已弃用） |
+| `SOXRAudioResampler` / `SOXRStreamAudioResampler` | `resamplers/soxr_resampler.py` / `soxr_stream_resampler.py` | **已弃用** → 两个 Sinc 版本；soxr 已移出核心依赖 → `pipecat-ai[soxr]` |
+| `ResampyResampler` | `resamplers/resampy_resampler.py` | **已弃用**；resampy（连带 numba/llvmlite）已移出核心依赖 → `pipecat-ai[resampy]`，默认安装体积约减半 |
 
-电话场景的完整链路回顾（[08](08-transports-serializers.md)）：管线 16k/24k PCM ↔ `SoxrStreamResampler` ↔ 8k μ-law（`audio/utils.py` 的 `ulaw_to_pcm`/`pcm_to_ulaw`）。
+电话场景的完整链路回顾（[08](08-transports-serializers.md)）：管线 16k/24k PCM ↔ `SincStreamAudioResampler` ↔ 8k μ-law（编解码在 `audio/g711.py` 的 `ulaw_to_pcm`/`pcm_to_ulaw`——`audio/utils.py` 的同名函数已弃用）。
 
 ### 15.5.3 DTMF
 
@@ -151,7 +152,8 @@ class BaseAudioFilter(ABC):
 ### 15.5.4 其它
 
 - `audio/volume.py`：音量处理（配合 `VolumeFrame`/`VolumeGainFrame`）。
-- `audio/utils.py`：μ-law 编解码、WAV 封装（`pcm_to_wav`，LLM 音频消息用）等工具函数。
+- `audio/g711.py`：G.711（μ-law/A-law）编解码（v1.16 新模块，同步、不重采样；`audio/utils.py` 的同名函数已弃用，采样率变化配流式重采样器）。
+- `audio/utils.py`：WAV 封装（`pcm_to_wav`，LLM 音频消息用）等工具函数。
 
 ## 15.6 选型速查
 

@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
 | 目录 | 内容 |
 | ---- | ---- |
-| `voice/` | **最大的目录**：按供应商组合 STT+LLM+TTS 的完整 bot（`voice-aws.py`、`voice-azure.py`、`voice-assemblyai.py`、`voice-aicoustics*.py` 等），找「某家供应商怎么接」看这里 |
+| `voice/` | **最大的目录**：按供应商组合 STT+LLM+TTS 的完整 bot（`voice-aws.py`、`voice-azure.py`、`voice-assemblyai.py`、`voice-aicoustics*.py` 等），找「某家供应商怎么接」看这里；v1.16 新增 `voice-google-interactions.py`、`voice-zoom-ai.py`（及 turn-detection 变体）、`voice-heygen.py` / `voice-heygen-http.py` |
 | `realtime/` | Speech-to-Speech 服务：`realtime-aws-nova-sonic*.py`、`realtime-azure-voice-live.py`、`realtime-gemini-live-*.py`（含异步工具、文件 API、搜索 grounding、本地驱动轮次、Vertex） |
 | `transcription/` | 纯转写/翻译管线：Deepgram Flux、Cartesia Turns、Gladia 翻译、FunASR 等 |
 | `vision/` | 视觉理解：`UserImageRequestFrame` 捕帧送 Anthropic/Gemini/OpenAI/Moondream |

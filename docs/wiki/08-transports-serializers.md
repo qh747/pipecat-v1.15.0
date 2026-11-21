@@ -164,7 +164,8 @@ class FrameSerializer(BaseObject):
 | `vonage.py` | `VonageFrameSerializer` | **16000** | 电话家族中唯一 16k |
 | `telnyx.py` | `TelnyxFrameSerializer` | 8000 | `inbound_encoding`/`outbound_encoding`（如 "PCMU"）可配 |
 | `exotel.py` | `ExotelFrameSerializer` | 8000 | PCM 直传仅重采样 |
-| `genesys.py` | `GenesysAudioHookSerializer` | 8000（PCMU/L16） | AudioHook 协议：open/opened 握手、ping/pong、pause/resume、Architect 变量 |
+| `genesys.py` | `GenesysAudioHookSerializer` | 8000（PCMU/L16） | AudioHook 协议：open/opened 握手、ping/pong、pause/resume、Architect 变量；暂停/恢复用 `create_pause_request()` / `create_resume_request()`（旧 `create_resumed_response()` 与 `on_pause` 事件已弃用 → `on_paused`） |
+| `jambonz.py` | `JambonzFrameSerializer` | 8000 默认（可 16k/24k/48k/64k） | Jambonz fork/实时协议（v1.16 新增）；`audio_out_sample_rate` 需与呼叫协商速率一致，否则播放变速 |
 | `protobuf.py` | `ProtobufFrameSerializer` | — | 二进制帧（Text/Audio/Transcription/Interruption） |
 | `rtvi_client.py` | `RTVIClientSerializer` | — | RTVI 客户端协议 |
 
@@ -182,8 +183,10 @@ flowchart LR
     end
 ```
 
-- 双向重采样器由 `create_stream_resampler(clear_after_secs=0.2)` 创建（Genesys 建议设 `None`）。
+- 双向重采样器由 `create_stream_resampler()` 创建（v1.16 起返回 `SincStreamAudioResampler`，跨暂停保留缓冲；`clear_after_secs` 已弃用，流尾用 `flush()`/`reset()`）。
 - DTMF：`{"event":"dtmf"}` ↔ `InputDTMFFrame`；打断：`InterruptionFrame` → `{"event":"clear"}`（让 Twilio 清播放缓冲）。
+
+**采样率参数弃用（v1.16）**：电话序列化器 `InputParams` 的 `sample_rate` 与 `twilio_sample_rate`/`telnyx_sample_rate`/`plivo_sample_rate`/`exotel_sample_rate`/`genesys_sample_rate`/`vonage_sample_rate` 已弃用且无效果——入站音频一律转为 `PipelineParams.audio_in_sample_rate`，出站用 `audio_in_sample_rate` / `audio_out_sample_rate`；`resampler_clear_after_secs` 同批弃用（序列化器在打断时自行重置出站重采样器）。
 
 **serializer 如何选择**：没有注册表——直接作为 `FastAPIWebsocketParams.serializer` 传入。自动选择只发生在开发 runner：`transport_type` 探测出 provider（首条消息结构识别，`runner/utils.py:67-111`）后由 `_create_telephony_transport` 硬编码实例化对应 serializer。
 

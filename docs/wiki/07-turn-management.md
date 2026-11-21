@@ -73,7 +73,7 @@ class UserTurnStrategiesParams:
 | `LLMTurnCompletionUserTurnStopStrategy` | `llm_turn_completion_user_turn_stop_strategy.py:30` | `waits_for_inference=True`。对**自己等的那次推理**读 marker：●/tool call/无 marker → 结束；◐/○ → 起 re-prompt 定时器（`incomplete_short/long_timeout`），到期 `report_user_turn_stopped()` + `LLMMessagesAppendFrame(run_llm=True)` 请 LLM 把用户拉回话题 |
 | `ClassifierUserTurnStopStrategy` | `classifier_user_turn_stop_strategy.py:65` | 每次停顿问 classifier（`src/pipecat/classifiers/`）：complete 立即结束；short 等 5s；long 等 10s；**分类失败/超 1s 立即放行**——轮次绝不卡在分类器上 |
 | `EagerUserTurnStopStrategy` | `eager_user_turn_stop_strategy.py:26` | 收 `EagerTranscriptionFrame` 即开始投机推理；轮次结束按 `match_policy` 比对提交的转录：匹配 → `confirms_speculation=True`（不二次推理）；不匹配或超 5s → `cancel_user_turn_speculation()` |
-| `ExternalUserTurnStopStrategy` | `external_user_turn_stop_strategy.py:23` | 解析 `ProposedUserStoppedSpeakingFrame` 或采纳 `UserStoppedSpeakingFrame`；`wait_for_transcript=True` 时等最后转写后 0.5s 静默再决策 |
+| `ExternalUserTurnStopStrategy` | `external_user_turn_stop_strategy.py:23` | 解析 `ProposedUserStoppedSpeakingFrame` 或采纳 `UserStoppedSpeakingFrame`；`wait_for_transcript=True` 时等最后转写后 0.5s 静默再决策。v1.16 起：stop 信号后一旦收到 finalized 转录即结束轮次，不再等满 `timeout`（Deepgram Flux 的 end-of-turn 转录是 finalized，最多省 0.5s） |
 | `DeferredUserTurnStopStrategy` | `deferred_user_turn_stop_strategy.py:24` | **1.15.0 弃用**（No replacement）：controller 自己跑推理后，等推理的策略在两种模式下都能收尾，直接传被包策略即可 |
 | `ExternalUserTurnCompletionStopStrategy` | `external_user_turn_completion_stop_strategy.py:22` | **1.15.0 弃用** → 建议 `ExternalUserTurnStopStrategy` + `ProposedUserStoppedSpeakingFrame` |
 
